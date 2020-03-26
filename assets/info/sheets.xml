@@ -1,0 +1,19 @@
+<Textures>
+  <TextureSheet name="complexanim">
+    <Texture name="complex_mc" width="157" height="47" path="complexanim/complex_mc.png" registrationPointX="2.00" registrationPointY="2.00"/>
+  </TextureSheet>
+  <TextureSheet name="fullanim">
+    <Texture name="flash_mc" width="130" height="60" path="fullanim/flash_mc.png" registrationPointX="2.00" registrationPointY="2.00" zIndex="5"/>
+    <Texture name="in_mc" width="41" height="37" path="fullanim/in_mc.png" registrationPointX="2.00" registrationPointY="2.00" zIndex="4"/>
+    <Texture name="made_mc" width="135" height="51" path="fullanim/made_mc.png" registrationPointX="2.00" registrationPointY="2.00" zIndex="3"/>
+    <Texture name="was_mc" width="98" height="40" path="fullanim/was_mc.png" registrationPointX="2.00" registrationPointY="2.00" zIndex="2"/>
+    <Texture name="anim_mc" width="118" height="38" path="fullanim/anim_mc.png" registrationPointX="2.00" registrationPointY="2.00" zIndex="1"/>
+    <Texture name="this_mc" width="102" height="49" path="fullanim/this_mc.png" registrationPointX="2.00" registrationPointY="2.00"/>
+  </TextureSheet>
+  <TextureSheet name="rotateanim">
+    <Texture name="spiral_mc" width="68" height="71" path="rotateanim/spiral_mc.png" registrationPointX="2.00" registrationPointY="2.00"/>
+  </TextureSheet>
+  <TextureSheet name="scaleanim">
+    <Texture name="scale_mc" width="138" height="42" path="scaleanim/scale_mc.png" registrationPointX="2.00" registrationPointY="2.00"/>
+  </TextureSheet>
+</Textures>
