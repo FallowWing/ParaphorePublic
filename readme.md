@@ -1,1 +1,1 @@
-The folders contain the source code, Makefiles, project xml, and batch files contain hardcoded paths, but are available for reference.
+The folders contain the source code, Makefiles, project xml, haxelib.7z and batch files contain hardcoded paths, but are available for reference.
