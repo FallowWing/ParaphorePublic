@@ -1,0 +1,143 @@
+mint:
+	(cd ../paraphoreMint; make)
+kitt:
+	(cd ../paraphoreKitt; make)
+
+gource:
+	# gource -s 0.75 --hide usernames --bloom-multiplier 0.1 --default-user-image ../other/gourceavatar.png -1920x1080 -o - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset medium -pix_fmt yuv420p -threads 0 -bf 0 $(BIN_LOC)/gource.mp4
+	rm -rf $(BIN_LOC)/gource
+	mkdir $(BIN_LOC)/gource
+	gource --output-custom-log $(BIN_LOC)/gource/gourceData.txt .
+	cat $(BIN_LOC)/gource/*.txt | sort -n > $(BIN_LOC)/gource/combined.txt
+	sed -i -r "s/MintPaw/FallowWing/g" $(BIN_LOC)/gource/combined.txt
+	sed -i -r "s/\|.{2}Amaranta.{12}\|/\|Kittery\|/g" $(BIN_LOC)/gource/combined.txt
+	sed -i -r "s/\|unknown\|/\|Kittery\|/g" $(BIN_LOC)/gource/combined.txt
+	sed -i -r "/^.*\|\/Engine\/lib\/.*$//d" $(BIN_LOC)/gource/combined.txt
+	sed -i -r "/^.*\|\/Engine\/include\/.*$//d" $(BIN_LOC)/gource/combined.txt
+	
+	gource -1920x1080 $(BIN_LOC)/gource/combined.txt --bloom-multiplier 0.1 --seconds-per-day 0.4 --stop-at-end -o - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 $(BIN_LOC)/gource/raw.mp4
+	ffmpeg -y -r 60 -i $(BIN_LOC)/gource/raw.mp4 -c:v libx264 -preset slow -crf 8 -c:a copy -threads 0 $(BIN_LOC)/gource/final.mp4
+
+resetSite:
+	cd $(PARAPHORE_COM) && \
+		git fetch origin && \
+		git reset --hard origin/master && \
+		git pull
+
+releaseEarly:
+	make resetSite
+	make bflash ARGS=''
+	cp $(BIN_LOC)/$(BIN_NAME).swf $(PARAPHORE_COM)/paraphore/early/*/stable.swf
+	
+	# make bwebgl ARGS=''
+	# rsync -rhvu --delete $(BIN_LOC)/webgl/ $(PARAPHORE_COM)/paraphore/early/*/stable/
+	# yui-compressor $(PARAPHORE_COM)/paraphore/early/*/stable/paraphore.js -o $(PARAPHORE_COM)/paraphore/early/*/stable/paraphore.js
+	# rm -rf $(PARAPHORE_COM)/paraphore/early/*/stable/paraphore.js.map
+	make shipDir SHIP_DIR_PREFIX="paraphore/early/*"
+	echo Shipped early flash.
+
+releaseFutureFlash:
+	make resetSite
+	make bflash ARGS='-debug'
+	cp $(BIN_LOC)/$(BIN_NAME).swf $(PARAPHORE_COM)/paraphore/dev/*/stable.swf
+	make shipDir SHIP_DIR_PREFIX="paraphore/dev"
+	echo Shipped future flash.
+
+releaseFutureWebGl:
+	make resetSite
+	make bwebgl ARGS='-debug'
+	rm -rf $(PARAPHORE_COM)/paraphore/dev/*/futureGl/*
+	cp -r $(BIN_LOC)/webgl/* $(PARAPHORE_COM)/paraphore/dev/*/futureGl/
+	rm -rf $(PARAPHORE_COM)/paraphore/dev/*/futureGl/paraphore.js.map
+	echo "Encrypting"
+	yui-compressor $(PARAPHORE_COM)/paraphore/dev/*/futureGl/paraphore.js -o $(PARAPHORE_COM)/paraphore/dev/*/futureGl/paraphore.js
+	make shipDir SHIP_DIR_PREFIX="paraphore/dev"
+	echo Shipped future webgl.
+
+releaseFuture:
+	make releaseFutureFlash
+	# make releaseFutureWebGl
+	
+	# echo Override building release version with public webgl
+	# make bwebgl ARGS=''
+	# rsync -rhvu --delete $(BIN_LOC)/webgl/ $(PARAPHORE_COM)/play/latest/
+	make shipDir SHIP_DIR_PREFIX="play"
+	echo Shipped latest webgl.
+
+releaseLatest:
+	clear
+	echo This is a fully public release, consider this carefully.
+	read -p "Press enter to continue..."
+	make resetSite
+	make bflash ARGS=''
+	# make bwebgl ARGS=''
+	clear
+	cp $(BIN_LOC)/$(BIN_NAME).swf $(PARAPHORE_COM)/play/latest.swf
+	# rsync -rhvu --delete $(BIN_LOC)/webgl/ $(PARAPHORE_COM)/play/latest/
+	make shipDir SHIP_DIR_PREFIX="play"
+	echo Shipped latest flash and webgl.
+
+shipCurrent:
+	cd $(PARAPHORE_COM) && \
+	s3cmd sync --delete-removed --acl-public --exclude '.git/*' . s3://paraphore.com/; \
+
+SHIP_DIR_PREFIX="none"
+shipDir:
+	if [[ $(SHIP_DIR_PREFIX) == "none" ]]; then \
+		echo No dir given; \
+		exit; \
+	fi; \
+	cd $(PARAPHORE_COM)/$(SHIP_DIR_PREFIX) && \
+	newPrefix=`pwd | grep -o "paraphore.com.*"`; \
+	newPrefix=$${newPrefix:14}; \
+	s3cmd sync --delete-removed --acl-public --exclude '.git/*' . s3://paraphore.com/$$newPrefix/; \
+	# s4cmd dsync --API-ACL="public-read" -s -r --delete-removed . s3://paraphore.com/$$newPrefix; \
+	git add .; \
+	git commit -m "up"; \
+	git push;
+
+fullShip:
+	cd $(PARAPHORE_COM) && \
+		s3cmd sync --delete-removed --acl-public --exclude '.git/*' ./ s3://paraphore.com/; \
+	# 	for f in `find . -maxdepth 1 -type f`; do \
+	# 		s4cmd sync --API-ACL="public-read" $$f s3://paraphore.com/; \
+	# 	done; \
+	# 	for d in `find . -maxdepth 1 -type d`; do \
+	# 		if [[ $$d != *".git"* && $$d != "." ]]; then \
+	# 			dTrail=$${d:2}; \
+	# 			echo Syncing $$d to $$dTrail; \
+	# 			s4cmd dsync --API-ACL="public-read" -s -r --delete-removed $$d s3://paraphore.com/$$dTrail; \
+	# 		fi \
+	# 	done; \
+		git add .; \
+		git commit -m "up"; \
+		git push;
+
+bcpp:
+	export VS110COMNTOOLS='C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\Common7\\Tools'; \
+	time haxe \
+		-cp $(HAXELIB_LOC)/hscript \
+		-cp $(HAXELIB_LOC)/hxinflate \
+		-cp $(HAXELIB_LOC)/actuate \
+		-cp $(HAXELIB_LOC)/hxmath \
+		-cp $(HAXELIB_LOC)/mt \
+		-cp $(HAXELIB_LOC)/format \
+		-cp $(HAXELIB_LOC)/hxcpp \
+		-cp $(PLATFORM_LAYER_LOC) \
+		-D static_link \
+		-D HXCPP_VERBOSE \
+		-D HXCPP_MSVC_VER=110 \
+		-D HXCPP_M32 \
+		-main Init -cp src -cpp $(BIN_LOC)/cpp/$(BIN_NAME) \
+		-D CPP_ENGINE -D hscriptPos -D stats $(ARGS)
+	make copyCppLib
+
+ifeq ($(shell uname), Linux)
+copyCppLib:
+	echo Copying...
+	cp ../bin/cpp/paraphore/libInit-debug.a ~/Dropbox/cpp/engine/lib
+else
+copyCppLib:
+	echo Copying...
+	cp ../bin/cpp/paraphore/libInit-debug.lib ~/Dropbox/cpp/engine/lib
+endif

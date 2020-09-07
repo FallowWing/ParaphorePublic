@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project>
+	<haxedef name="advanced-telemetry" if="debug" />
+	<haxeflag name="-dce full" />
+
+	<meta title="paraphore" package="com.sample.paraphore" version="1.0.0" company="Company Name" />
+	<app path="../bin" file="paraphore" preloader="Preloader" swf-version="12"/>
+	<window width="800" height="600" vsync="false"/>
+
+	<app main="Init" if="OPENFL_ENGINE" />
+
+	<app path="../bin" unless="updateAssets" />
+	<app path="../assets/openflManifest" if="updateAssets OPENFL_ENGINE" />
+	<compilerflag name="--macro" value="allowPackage('flash')"/>
+
+	<source path="src" />
+	<haxelib name="openfl" />
+
+	<assets path="../assets" rename="assets" exclude="*.swf|openflManifest|*.ogg|*.eot|*.svg|*.woff|*.json" if="flash"/>
+	<assets path="../assets" rename="assets" exclude="*.swf|openflManifest|*.mp3|*.json" if="html5"/>
+	<library path="../assets/swf/goatOralDeep.swf" preload="true" />
+	<library path="../assets/swf/goatOral.swf" preload="true" />
+	<library path="../assets/swf/goatShop.swf" preload="true" />
+	<library path="../assets/swf/goatTubCockHard.swf" preload="true" />
+	<library path="../assets/swf/goatTubCockSoft.swf" preload="true" />
+	<library path="../assets/swf/goatTubCumCock.swf" preload="true" />
+	<library path="../assets/swf/goatTubCumCunt.swf" preload="true" />
+	<library path="../assets/swf/goatTubCumLiquidCum.swf" preload="true" />
+	<library path="../assets/swf/goatTubCumLiquidPee.swf" preload="true" />
+	<library path="../assets/swf/goatTubCum.swf" preload="true" />
+	<library path="../assets/swf/goatTubCuntHard.swf" preload="true" />
+	<library path="../assets/swf/goatTubCuntSoft.swf" preload="true" />
+	<library path="../assets/swf/goatTubLiquidCum.swf" preload="true" />
+	<library path="../assets/swf/goatTubLiquidPee.swf" preload="true" />
+	<library path="../assets/swf/goatTub.swf" preload="true" />
+	<library path="../assets/swf/gooGoatButtFuck.swf" preload="true" />
+</project>
